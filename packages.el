@@ -62,3 +62,7 @@
 (package! org-reverse-datetree)
 (package! org-datetree)
 (package! org-ql)
+(package! spotify
+  :recipe (:host github :repo "danielfm/spotify.el"))
+(package! decide-mode
+  :recipe (:host github :repo "lifelike/decide-mode"))

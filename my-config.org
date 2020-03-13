@@ -1,7 +1,7 @@
 #+TITLE: My Doom-Emacs configuration
 
 * General settings
-** Secrets
+** Secrets,
 Loads OAuth keys, passwords, usernames etc from an external file outside of
 version control
 #+BEGIN_SRC emacs-lisp
@@ -9,7 +9,6 @@ version control
   (when (file-exists-p secret.el)
     (load secret.el)))
 #+END_SRC
-
 ** Visuals
 *** Font
 Doom exposes five (optional) variables for controlling fonts in Doom. Here
@@ -80,18 +79,8 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 * Packages
 ** Load paths
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "/home/mikk/.emacs.d/spotify")
-(require 'oauth2 "~/.emacs.d/spotify/oauth2.el")
-(require 'spotify-api "~/.emacs.d/spotify/spotify-api.el")
-(require 'spotify-track-search "~/.emacs.d/spotify/spotify-track-search.el")
-(require 'spotify-playlist-search "~/.emacs.d/spotify/spotify-playlist-search.el")
-(require 'spotify-device-select "~/.emacs.d/spotify/spotify-device-select.el")
-(require 'spotify-remote "~/.emacs.d/spotify/spotify-remote.el")
-(require 'spotify-dbus "~/.emacs.d/spotify/spotify-dbus.el")
-(require 'spotify-connect "~/.emacs.d/spotify/spotify-connect.el")
-(require 'spotify-controller "~/.emacs.d/spotify/spotify-controller.el")
-(require 'spotify "~/.emacs.d/spotify/spotify.el")
-(require 'decide "~/.emacs.d/decide-mode/decide.el")
+(require 'spotify)
+(require 'decide)
 (require 'org-expiry)
 #+END_SRC
 ** Org
@@ -272,7 +261,7 @@ change `org-directory'. It must be set before org loads!
 ** Spotify
 #+BEGIN_SRC emacs-lisp
 ;; Spotify settings
-(setq spotify-transport 'connect)
+(setq spotify-transport 'dbus)
 (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
 #+END_SRC
 

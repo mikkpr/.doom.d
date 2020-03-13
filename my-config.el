@@ -27,18 +27,8 @@
       ad-do-it)
     ad-do-it))
 
-(add-to-list 'load-path "/home/mikk/.emacs.d/spotify")
-(require 'oauth2 "~/.emacs.d/spotify/oauth2.el")
-(require 'spotify-api "~/.emacs.d/spotify/spotify-api.el")
-(require 'spotify-track-search "~/.emacs.d/spotify/spotify-track-search.el")
-(require 'spotify-playlist-search "~/.emacs.d/spotify/spotify-playlist-search.el")
-(require 'spotify-device-select "~/.emacs.d/spotify/spotify-device-select.el")
-(require 'spotify-remote "~/.emacs.d/spotify/spotify-remote.el")
-(require 'spotify-dbus "~/.emacs.d/spotify/spotify-dbus.el")
-(require 'spotify-connect "~/.emacs.d/spotify/spotify-connect.el")
-(require 'spotify-controller "~/.emacs.d/spotify/spotify-controller.el")
-(require 'spotify "~/.emacs.d/spotify/spotify.el")
-(require 'decide "~/.emacs.d/decide-mode/decide.el")
+(require 'spotify)
+(require 'decide)
 (require 'org-expiry)
 
 (setq org-log-state-notes-into-drawer t)
@@ -144,7 +134,7 @@
 (setq org-agenda-property-position 'where-it-fits)
 
 ;; Spotify settings
-(setq spotify-transport 'connect)
+(setq spotify-transport 'dbus)
 (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
 
 (define-prefix-command 'decide-prefix-map)
