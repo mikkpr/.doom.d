@@ -2,6 +2,26 @@
   (when (file-exists-p secret.el)
     (load secret.el)))
 
+(defun set-windows-paths ()
+  (defvar dropbox-path "D:/Dropbox/org"))
+
+(defun set-linux-paths ()
+  (defvar dropbox-path "~/Dropbox/org"))
+
+(cond
+ ((string-equal system-type "windows-nt")
+  (progn
+    (set-windows-paths)
+    ))
+ ((string-equal system-type "gnu/linux")
+  (progn
+    (set-linux-paths)
+    ))
+ )
+(defvar org-home-file-path (expand-file-name "home.org" dropbox-path))
+(defvar org-work-file-path (expand-file-name "work.org" dropbox-path))
+(defvar org-schedule-file-path (expand-file-name "schedule.org" dropbox-path))
+
 (setq doom-font (font-spec :family "Hasklig" :size 12))
 
 (setq doom-theme 'doom-tomorrow-night)
@@ -33,18 +53,17 @@
 
 (setq org-log-state-notes-into-drawer t)
 
-;;setq org-directory "~/Dropbox/org/")
-(setq org-agenda-files '(
-                         "~/Dropbox/org/home.org"
-                         "~/Dropbox/org/work.org"
-                         ))
+(setq org-agenda-files (list
+                           org-home-file-path
+                           org-work-file-path
+                           ))
 
 (defun mikkpr/open-home-org ()
   (interactive)
-  (find-file "~/Dropbox/org/home.org"))
+  (find-file org-home-file-path))
 (defun mikkpr/open-work-org ()
   (interactive)
-  (find-file "~/Dropbox/org/work.org"))
+  (find-file org-work-file-path))
 
 (after! org
   (setq org-todo-keywords
@@ -52,18 +71,18 @@
 
 (setq org-capture-templates
 '(("p" "Home" entry
-  (file+headline "~/Dropbox/org/home.org" "Inbox")
+  (file+headline org-home-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)
- ("l" "Work log entry" entry (file+olp+datetree+prompt "~/Dropbox/org/work.org" "Log")
+ ("l" "Work log entry" entry (file+olp+datetree+prompt org-work-file-path "Log")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
- ("j" "Journal entry" entry (file+olp+datetree+prompt "~/Dropbox/org/home.org" "Journal")
+ ("j" "Journal entry" entry (file+olp+datetree+prompt org-home-file-path "Journal")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
  ("w" "Work" entry
-  (file+headline "~/Dropbox/org/work.org" "Inbox")
+  (file+headline org-work-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)))
 
 (require 'org-gcal)
-(setq org-gcal-file-alist '(("oinasz@gmail.com" .  "~/Dropbox/org/schedule.org")))
+(setq org-gcal-file-alist '(("oinasz@gmail.com" .  org-schedule-file-path)))
 
 (require 'org-super-agenda)
 (def-package! org-super-agenda
@@ -92,12 +111,12 @@
 
 (defun mikkpr/org-refile-to-work-log (arg)
   (interactive "P")
-  (org-reverse-datetree-refile-to-file "~/Dropbox/org/work.org" "Log"
+  (org-reverse-datetree-refile-to-file org-work-file-path "Log"
                                        :ask-always arg :prefer '("SCHEDULED" "CREATED_TIME" "CREATED_AT" "CLOSED")))
 
 (defun mikkpr/org-refile-to-journal (arg)
   (interactive "P")
-  (org-reverse-datetree-refile-to-file "~/Dropbox/org/home.org" "Journal"
+  (org-reverse-datetree-refile-to-file org-home-file-path "Journal"
                                        :ask-always arg :prefer '("SCHEDULED" "CREATED_TIME" "CREATED_AT" "CLOSED")))
 
 (set-face-attribute 'org-agenda-structure nil :inherit 'default :height 1.25)
@@ -121,13 +140,13 @@
          ((org-super-agenda-groups
            '((:todo "DONE")
              (:todo t)))
-          (org-agenda-files '("~/Dropbox/org/home.org"))))
+          (org-agenda-files (list org-home-file-path))))
       ("w" "Browse entries in work.org"
          org-ql-block '(level 4)
          ((org-super-agenda-groups
            '((:todo "DONE")
              (:todo t)))
-          (org-agenda-files '("~/Dropbox/org/work.org"))))))
+          (org-agenda-files (list org-work-file-path))))))
 
 (require 'org-agenda-property)
 (setq org-agenda-property-list '("status"))
