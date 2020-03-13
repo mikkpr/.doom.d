@@ -1,0 +1,401 @@
+#+TITLE: My Doom-Emacs configuration
+
+* General settings
+** Secrets
+Loads OAuth keys, passwords, usernames etc from an external file outside of
+version control
+#+BEGIN_SRC emacs-lisp
+(let ((secret.el (expand-file-name "secret.el" "~/.doom.d")))
+  (when (file-exists-p secret.el)
+    (load secret.el)))
+#+END_SRC
+
+** Visuals
+*** Font
+Doom exposes five (optional) variables for controlling fonts in Doom. Here
+are the three important ones:
+
++ `doom-font'
++ `doom-variable-pitch-font'
++ `doom-big-font' -- used for `doom-big-font-mode'; use this for
+  presentations or streaming.
+
+They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+font string. You generally only need these two:
+#+BEGIN_SRC emacs-lisp
+(setq doom-font (font-spec :family "Hasklig" :size 12))
+#+END_SRC
+
+*** Theme
+There are two ways to load a theme. Both assume the theme is installed and
+available. You can either set `doom-theme' or manually load a theme with the
+`load-theme' function. This is the default:
+#+BEGIN_SRC emacs-lisp
+(setq doom-theme 'doom-tomorrow-night)
+#+END_SRC
+*** Line numbers
+This determines the style of line numbers in effect. If set to `nil', line
+numbers are disabled. For relative line numbers, set this to `relative'.
+#+BEGIN_SRC emacs-lisp
+(setq display-line-numbers-type t)
+#+END_SRC
+*** Indentation
+**** Javascript
+:PROPERTIES:
+:ID:       21acf9da-c62a-4450-ab0e-48adcfd07fd9
+:END:
+#+BEGIN_SRC emacs-lisp
+(setq
+  js-indent-level 2)
+#+END_SRC
+
+**** web-mode hooks
+:PROPERTIES:
+:ID:       dbb37c3b-efe4-471a-b1ac-6352fd2eaf13
+:END:
+#+BEGIN_SRC emacs-lisp
+(defun my-web-mode-hook ()
+  "Hooks for Web mode. Adjust indents"
+  ;;; http://web-mode.org/
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2))
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+#+END_SRC
+
+*** JSX syntax highlighting
+:PROPERTIES:
+:ID:       17c8b88d-a75a-469b-984f-08d8556639aa
+:END:
+#+BEGIN_SRC emacs-lisp
+;; for better jsx syntax-highlighting in web-mode
+;; - courtesy of Patrick @halbtuerke
+(defadvice web-mode-highlight-part (around tweak-jsx activate)
+  (if (equal web-mode-content-type "jsx")
+    (let ((web-mode-enable-part-face nil))
+      ad-do-it)
+    ad-do-it))
+#+END_SRC
+
+* Packages
+** Load paths
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "/home/mikk/.emacs.d/spotify")
+(require 'oauth2 "~/.emacs.d/spotify/oauth2.el")
+(require 'spotify-api "~/.emacs.d/spotify/spotify-api.el")
+(require 'spotify-track-search "~/.emacs.d/spotify/spotify-track-search.el")
+(require 'spotify-playlist-search "~/.emacs.d/spotify/spotify-playlist-search.el")
+(require 'spotify-device-select "~/.emacs.d/spotify/spotify-device-select.el")
+(require 'spotify-remote "~/.emacs.d/spotify/spotify-remote.el")
+(require 'spotify-dbus "~/.emacs.d/spotify/spotify-dbus.el")
+(require 'spotify-connect "~/.emacs.d/spotify/spotify-connect.el")
+(require 'spotify-controller "~/.emacs.d/spotify/spotify-controller.el")
+(require 'spotify "~/.emacs.d/spotify/spotify.el")
+(require 'decide "~/.emacs.d/decide-mode/decide.el")
+(require 'org-expiry)
+#+END_SRC
+** Org
+**** Settings
+:PROPERTIES:
+:ID:       13ca0226-5892-42ca-b99a-8974f3398d08
+:END:
+#+BEGIN_SRC emacs-lisp
+(setq org-log-state-notes-into-drawer t)
+#+END_SRC
+
+**** Agenda files
+If you use `org' and don't want your org files in the default location below,
+change `org-directory'. It must be set before org loads!
+#+BEGIN_SRC emacs-lisp
+;;setq org-directory "~/Dropbox/org/")
+(setq org-agenda-files '(
+                         "~/Dropbox/org/home.org"
+                         "~/Dropbox/org/work.org"
+                         ))
+#+END_SRC
+**** Custom commands
+***** Open agenda files
+:PROPERTIES:
+:ID:       2c2272ab-f22f-4b30-a826-dd1b8ec4df15
+:END:
+#+BEGIN_SRC emacs-lisp
+(defun mikkpr/open-home-org ()
+  (interactive)
+  (find-file "~/Dropbox/org/home.org"))
+(defun mikkpr/open-work-org ()
+  (interactive)
+  (find-file "~/Dropbox/org/work.org"))
+#+END_SRC
+
+**** Todo keywords
+:PROPERTIES:
+:ID:       4a8de743-da34-4c13-a660-a1dc34b5cc3b
+:END:
+#+BEGIN_SRC emacs-lisp
+(after! org
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "INPROGRESS(i)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
+#+END_SRC
+
+**** Capture templates
+:PROPERTIES:
+:ID:       42c6ebcd-cbb9-4a45-a7ff-94c277fff072
+:END:
+#+BEGIN_SRC emacs-lisp
+(setq org-capture-templates
+'(("p" "Home" entry
+  (file+headline "~/Dropbox/org/home.org" "Inbox")
+  "* %?\n%i\nCREATED: %u" :prepend t)
+ ("l" "Work log entry" entry (file+olp+datetree+prompt "~/Dropbox/org/work.org" "Log")
+  "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
+ ("j" "Journal entry" entry (file+olp+datetree+prompt "~/Dropbox/org/home.org" "Journal")
+  "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
+ ("w" "Work" entry
+  (file+headline "~/Dropbox/org/work.org" "Inbox")
+  "* %?\n%i\nCREATED: %u" :prepend t)))
+#+END_SRC
+
+**** Org-gcal
+:PROPERTIES:
+:ID:       22b5598f-d25e-49be-9fed-fa384fccbfb6
+:END:
+#+BEGIN_SRC emacs-lisp
+(require 'org-gcal)
+(setq org-gcal-file-alist '(("oinasz@gmail.com" .  "~/Dropbox/org/schedule.org")))
+#+END_SRC
+
+**** Org-super-agenda
+:PROPERTIES:
+:ID:       bad41a54-afcd-4788-9c5f-ee141e7d1ba9
+:END:
+#+BEGIN_SRC emacs-lisp
+(require 'org-super-agenda)
+(def-package! org-super-agenda
+  :after org-agenda
+  :init
+  (setq org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-include-deadlines t
+        org-agenda-block-separator nil
+        org-agenda-compact-blocks t
+        org-agenda-start-day nil
+        org-agenda-span 1
+        org-agenda-start-on-weekday nil)
+  :config
+  (org-super-agenda-mode)
+  )
+#+END_SRC
+
+**** Insert CREATED_AT hook
+:PROPERTIES:
+:ID:       7b023be1-09eb-436b-b545-c0d2606cc93f
+:END:
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-insert-heading-hook
+         #'(lambda()
+               (save-excursion
+                    (org-back-to-heading)
+                    (org-expiry-insert-created))))
+#+END_SRC
+**** org-reverse-datetree
+:PROPERTIES:
+:ID:       abd9eb20-092b-4cc6-b092-a2eb1d491a05
+:END:
+#+BEGIN_SRC emacs-lisp
+(require 'org-datetree)
+(require 'org-reverse-datetree)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun mikkpr/org-refile-to-work-log (arg)
+  (interactive "P")
+  (org-reverse-datetree-refile-to-file "~/Dropbox/org/work.org" "Log"
+                                       :ask-always arg :prefer '("SCHEDULED" "CREATED_TIME" "CREATED_AT" "CLOSED")))
+
+(defun mikkpr/org-refile-to-journal (arg)
+  (interactive "P")
+  (org-reverse-datetree-refile-to-file "~/Dropbox/org/home.org" "Journal"
+                                       :ask-always arg :prefer '("SCHEDULED" "CREATED_TIME" "CREATED_AT" "CLOSED")))
+#+END_SRC
+
+**** org-agenda-structure
+:PROPERTIES:
+:ID:       344a5b06-0a02-4137-b6c4-da333c95c048
+:END:
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'org-agenda-structure nil :inherit 'default :height 1.25)
+#+END_SRC
+
+**** Custom commands
+:PROPERTIES:
+:ID:       fd541e89-9701-4770-b467-c8909f613ac2
+:END:
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-custom-commands
+      '(("." "Overview (Custom)"
+         ((agenda ""
+                  ((org-agenda-span 5)
+                   (org-agenda-start-on-weekday 1)
+                   (org-agenda-show-future-repeats 'next)
+                   (org-agenda-scheduled-leaders '("" ""))
+                   (org-agenda-overriding-header "* Calendar\n")))
+          (todo ""
+                ((org-agenda-overriding-header "\n* Open\n")
+                 (org-agenda-block-separator nil)
+                 (org-agenda-sorting-strategy '(todo-state-up))
+                 (org-agenda-todo-ignore-scheduled 'all)))
+          ))
+      ("h" "Browse entries in home.org"
+         org-ql-block '(level 4)
+         ((org-super-agenda-groups
+           '((:todo "DONE")
+             (:todo t)))
+          (org-agenda-files '("~/Dropbox/org/home.org"))))
+      ("w" "Browse entries in work.org"
+         org-ql-block '(level 4)
+         ((org-super-agenda-groups
+           '((:todo "DONE")
+             (:todo t)))
+          (org-agenda-files '("~/Dropbox/org/work.org"))))))
+#+END_SRC
+
+**** Org-agenda-property
+:PROPERTIES:
+:ID:       e0e37646-215d-42f7-84ac-dd138660eeb9
+:END:
+#+BEGIN_SRC emacs-lisp
+(require 'org-agenda-property)
+(setq org-agenda-property-list '("status"))
+(setq org-agenda-property-position 'where-it-fits)
+#+END_SRC
+
+** Spotify
+#+BEGIN_SRC emacs-lisp
+;; Spotify settings
+(setq spotify-transport 'connect)
+(define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+#+END_SRC
+
+** Decide
+:PROPERTIES:
+:ID:       a8a7c73d-f9f8-488a-bd69-8a4ec3c0ff81
+:END:
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'decide-prefix-map)
+(define-key decide-mode-map (kbd "C-c ?") 'decide-prefix-map)
+(define-key decide-mode-map (kbd "C-c ? ?") 'decide-dwim-insert)
+(define-key decide-mode-map (kbd "C-c ? +") 'decide-for-me-likely)
+(define-key decide-mode-map (kbd "C-c ? -") 'decide-for-me-unlikely)
+(define-key decide-mode-map (kbd "C-c ? d") 'decide-roll-dice)
+(define-key decide-mode-map (kbd "C-c ? D") 'decide-roll-2d6)
+(define-key decide-mode-map (kbd "C-c ? 3") 'decide-roll-1d3)
+(define-key decide-mode-map (kbd "C-c ? 4") 'decide-roll-1d4)
+(define-key decide-mode-map (kbd "C-c ? 5") 'decide-roll-1d5)
+(define-key decide-mode-map (kbd "C-c ? 6") 'decide-roll-1d6)
+(define-key decide-mode-map (kbd "C-c ? 7") 'decide-roll-1d7)
+(define-key decide-mode-map (kbd "C-c ? 8") 'decide-roll-1d8)
+(define-key decide-mode-map (kbd "C-c ? 9") 'decide-roll-1d9)
+(define-key decide-mode-map (kbd "C-c ? 1 0") 'decide-roll-1d10)
+(define-key decide-mode-map (kbd "C-c ? 1 2") 'decide-roll-1d12)
+(define-key decide-mode-map (kbd "C-c ? 2 0") 'decide-roll-1d20)
+(define-key decide-mode-map (kbd "C-c ? %") 'decide-roll-1d100)
+(define-key decide-mode-map (kbd "C-c ? f") 'decide-roll-fate)
+(define-key decide-mode-map (kbd "C-c ? a") 'decide-roll-1dA)
+(define-key decide-mode-map (kbd "C-c ? A") 'decide-roll-2dA)
+(define-key decide-mode-map (kbd "C-c ? r") 'decide-random-range)
+(define-key decide-mode-map (kbd "C-c ? c") 'decide-random-choice)
+(define-key decide-mode-map (kbd "C-c ? t") 'decide-from-table)
+#+END_SRC
+** Projectile
+:PROPERTIES:
+:ID:       7891e8fa-54da-4e1b-ad86-b29597ad3b68
+:END:
+#+BEGIN_SRC emacs-lisp
+(setq
+  projectile-project-search-path '("~/dev/"))
+#+END_SRC
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+(require 'flycheck)
+
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
+
+(setq-default flycheck-temp-prefix ".flycheck")
+
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(json-jsonlist)))
+
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun mikkpr/JSXHook ()
+  "My Hook for JSX Files"
+  (interactive)
+  (web-mode)
+  (web-mode-set-content-type "jsx")
+  (flycheck-select-checker 'javascript-eslint)
+  (flycheck-mode))
+
+(add-to-list 'magic-mode-alist '("import " . mikkpr/JSXHook))
+#+END_SRC
+
+**** Use ESLint from node-modules/
+:PROPERTIES:
+:ID:       dca5e065-5a25-47a4-a39e-58628a5d6530
+:END:
+#+BEGIN_SRC emacs-lisp
+(defun mikkpr/use-eslint-from-node-modules ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+(add-hook 'flycheck-mode-hook #'mikkpr/use-eslint-from-node-modules)
+#+END_SRC
+
+* Keybinds
+#+BEGIN_SRC emacs-lisp
+;; with `evil-define-key'
+(evil-define-key nil evil-normal-state-map
+  "J" (lambda() (interactive) (evil-next-visual-line 5))
+  "K" (lambda() (interactive) (evil-previous-visual-line 5))
+  (kbd "SPC o h") 'mikkpr/open-home-org
+  (kbd "SPC o w") 'mikkpr/open-work-org
+  (kbd "C-j") 'next-error
+  (kbd "C-k") 'previous-error
+  (kbd ", e") 'centaur-tabs-forward
+  (kbd ", q") 'centaur-tabs-backward
+  (kbd ", x") 'kill-this-buffer
+  (kbd ", 1") 'centaur-tabs-select-visible-tab
+  (kbd ", 2") 'centaur-tabs-select-visible-tab
+  (kbd ", 3") 'centaur-tabs-select-visible-tab
+  (kbd ", 4") 'centaur-tabs-select-visible-tab
+  (kbd ", 5") 'centaur-tabs-select-visible-tab
+  (kbd ", 6") 'centaur-tabs-select-visible-tab
+  (kbd ", 7") 'centaur-tabs-select-visible-tab
+  (kbd ", 8") 'centaur-tabs-select-visible-tab
+  (kbd ", 9") 'centaur-tabs-select-visible-tab
+  (kbd ", c") 'evil-avy-goto-char
+  (kbd ", l") 'evil-avy-goto-line
+  (kbd ", w") 'evil-avy-goto-word-0
+  (kbd "SPC m r w") 'mikkpr/org-refile-to-work-log
+  (kbd "SPC m r j") 'mikkpr/org-refile-to-journal
+  (kbd ", a") 'evil-window-left
+  (kbd ", d") 'evil-window-right)
+#+END_SRC
+
+* ???
+:PROPERTIES:
+:ID:       ab9ece60-b05d-4feb-9ee0-9e58182d75f7
+:END:
+#+BEGIN_SRC emacs-lisp
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+#+END_SRC

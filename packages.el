@@ -59,3 +59,6 @@
 (package! json-mode)
 (package! exec-path-from-shell)
 (package! org-agenda-property)
+(package! org-reverse-datetree)
+(package! org-datetree)
+(package! org-ql)
