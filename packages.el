@@ -66,3 +66,4 @@
   :recipe (:host github :repo "danielfm/spotify.el"))
 (package! decide-mode
   :recipe (:host github :repo "lifelike/decide-mode"))
+(package! command-log-mode)

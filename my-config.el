@@ -3,10 +3,14 @@
     (load secret.el)))
 
 (defun set-windows-paths ()
-  (defvar dropbox-path "D:/Dropbox/org"))
+  (defvar dropbox-path "D:/Dropbox/org")
+  (setq org-gcal-file-alist '(("oinasz@gmail.com" . "D:\Dropbox\org\schedule.org")))
+  )
 
 (defun set-linux-paths ()
-  (defvar dropbox-path "~/Dropbox/org"))
+  (defvar dropbox-path "~/Dropbox/org")
+  (setq org-gcal-file-alist '(("oinasz@gmail.com" . "~\org\schedule.org")))
+  )
 
 (cond
  ((string-equal system-type "windows-nt")
@@ -47,11 +51,14 @@
       ad-do-it)
     ad-do-it))
 
+(setq max-mini-window-height 0.5)
+
 (require 'spotify)
-(require 'decide)
 (require 'org-expiry)
 
-(setq org-log-state-notes-into-drawer t)
+(setq org-log-state-notes-into-drawer t
+      org-habit-preceding-days 5
+      org-habit-following-days 5)
 
 (setq org-agenda-files (list
                            org-home-file-path
@@ -69,20 +76,22 @@
   (setq org-todo-keywords
         '((sequence "TODO(t)" "INPROGRESS(i)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
 
+(setq org-display-custom-times t
+      org-time-stamp-custom-formats '("<%Y-%m-%d>" . "<%Y-%m-%d %H:%M>"))
+
 (setq org-capture-templates
 '(("p" "Home" entry
   (file+headline org-home-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)
- ("l" "Work log entry" entry (file+olp+datetree+prompt org-work-file-path "Log")
+ ("l" "Work log entry" entry (file+olp+datetree org-work-file-path "Log")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
- ("j" "Journal entry" entry (file+olp+datetree+prompt org-home-file-path "Journal")
+ ("j" "Journal entry" entry (file+olp+datetree org-home-file-path "Journal")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
  ("w" "Work" entry
   (file+headline org-work-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)))
 
 (require 'org-gcal)
-(setq org-gcal-file-alist '(("oinasz@gmail.com" .  org-schedule-file-path)))
 
 (require 'org-super-agenda)
 (def-package! org-super-agenda
@@ -156,33 +165,10 @@
 (setq spotify-transport 'dbus)
 (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
 
-(define-prefix-command 'decide-prefix-map)
-(define-key decide-mode-map (kbd "C-c ?") 'decide-prefix-map)
-(define-key decide-mode-map (kbd "C-c ? ?") 'decide-dwim-insert)
-(define-key decide-mode-map (kbd "C-c ? +") 'decide-for-me-likely)
-(define-key decide-mode-map (kbd "C-c ? -") 'decide-for-me-unlikely)
-(define-key decide-mode-map (kbd "C-c ? d") 'decide-roll-dice)
-(define-key decide-mode-map (kbd "C-c ? D") 'decide-roll-2d6)
-(define-key decide-mode-map (kbd "C-c ? 3") 'decide-roll-1d3)
-(define-key decide-mode-map (kbd "C-c ? 4") 'decide-roll-1d4)
-(define-key decide-mode-map (kbd "C-c ? 5") 'decide-roll-1d5)
-(define-key decide-mode-map (kbd "C-c ? 6") 'decide-roll-1d6)
-(define-key decide-mode-map (kbd "C-c ? 7") 'decide-roll-1d7)
-(define-key decide-mode-map (kbd "C-c ? 8") 'decide-roll-1d8)
-(define-key decide-mode-map (kbd "C-c ? 9") 'decide-roll-1d9)
-(define-key decide-mode-map (kbd "C-c ? 1 0") 'decide-roll-1d10)
-(define-key decide-mode-map (kbd "C-c ? 1 2") 'decide-roll-1d12)
-(define-key decide-mode-map (kbd "C-c ? 2 0") 'decide-roll-1d20)
-(define-key decide-mode-map (kbd "C-c ? %") 'decide-roll-1d100)
-(define-key decide-mode-map (kbd "C-c ? f") 'decide-roll-fate)
-(define-key decide-mode-map (kbd "C-c ? a") 'decide-roll-1dA)
-(define-key decide-mode-map (kbd "C-c ? A") 'decide-roll-2dA)
-(define-key decide-mode-map (kbd "C-c ? r") 'decide-random-range)
-(define-key decide-mode-map (kbd "C-c ? c") 'decide-random-choice)
-(define-key decide-mode-map (kbd "C-c ? t") 'decide-from-table)
-
 (setq
   projectile-project-search-path '("~/dev/"))
+
+(add-to-list 'projectile-globally-ignored-files "npm-shrinkwrap.json")
 
 (require 'flycheck)
 

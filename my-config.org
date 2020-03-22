@@ -13,12 +13,16 @@ version control
 *** Define Windows paths
 #+BEGIN_SRC emacs-lisp
 (defun set-windows-paths ()
-  (defvar dropbox-path "D:/Dropbox/org"))
+  (defvar dropbox-path "D:/Dropbox/org")
+  (setq org-gcal-file-alist '(("oinasz@gmail.com" . "D:\Dropbox\org\schedule.org")))
+  )
 #+END_SRC
 *** Define Linux paths
 #+BEGIN_SRC emacs-lisp
 (defun set-linux-paths ()
-  (defvar dropbox-path "~/Dropbox/org"))
+  (defvar dropbox-path "~/Dropbox/org")
+  (setq org-gcal-file-alist '(("oinasz@gmail.com" . "~\org\schedule.org")))
+  )
 #+END_SRC
 
 *** Set paths based on OS
@@ -37,6 +41,7 @@ version control
 (defvar org-work-file-path (expand-file-name "work.org" dropbox-path))
 (defvar org-schedule-file-path (expand-file-name "schedule.org" dropbox-path))
 #+END_SRC
+
 ** Visuals
 *** Font
 Doom exposes five (optional) variables for controlling fonts in Doom. Here
@@ -103,12 +108,15 @@ numbers are disabled. For relative line numbers, set this to `relative'.
       ad-do-it)
     ad-do-it))
 #+END_SRC
+*** Mini window height
+#+BEGIN_SRC emacs-lisp
+(setq max-mini-window-height 0.5)
+#+END_SRC
 
 * Packages
 ** Load paths
 #+BEGIN_SRC emacs-lisp
 (require 'spotify)
-(require 'decide)
 (require 'org-expiry)
 #+END_SRC
 ** Org
@@ -117,7 +125,9 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 :ID:       13ca0226-5892-42ca-b99a-8974f3398d08
 :END:
 #+BEGIN_SRC emacs-lisp
-(setq org-log-state-notes-into-drawer t)
+(setq org-log-state-notes-into-drawer t
+      org-habit-preceding-days 5
+      org-habit-following-days 5)
 #+END_SRC
 
 **** Agenda files
@@ -152,7 +162,11 @@ change `org-directory'. It must be set before org loads!
   (setq org-todo-keywords
         '((sequence "TODO(t)" "INPROGRESS(i)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
 #+END_SRC
-
+**** Time stamps
+#+BEGIN_SRC emacs-lisp
+(setq org-display-custom-times t
+      org-time-stamp-custom-formats '("<%Y-%m-%d>" . "<%Y-%m-%d %H:%M>"))
+#+END_SRC
 **** Capture templates
 :PROPERTIES:
 :ID:       42c6ebcd-cbb9-4a45-a7ff-94c277fff072
@@ -162,9 +176,9 @@ change `org-directory'. It must be set before org loads!
 '(("p" "Home" entry
   (file+headline org-home-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)
- ("l" "Work log entry" entry (file+olp+datetree+prompt org-work-file-path "Log")
+ ("l" "Work log entry" entry (file+olp+datetree org-work-file-path "Log")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
- ("j" "Journal entry" entry (file+olp+datetree+prompt org-home-file-path "Journal")
+ ("j" "Journal entry" entry (file+olp+datetree org-home-file-path "Journal")
   "* %?\nCREATED: %u" :prepend t :jump-to-captured t)
  ("w" "Work" entry
   (file+headline org-work-file-path "Inbox")
@@ -177,7 +191,6 @@ change `org-directory'. It must be set before org loads!
 :END:
 #+BEGIN_SRC emacs-lisp
 (require 'org-gcal)
-(setq org-gcal-file-alist '(("oinasz@gmail.com" .  org-schedule-file-path)))
 #+END_SRC
 
 **** Org-super-agenda
@@ -292,36 +305,6 @@ change `org-directory'. It must be set before org loads!
 (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
 #+END_SRC
 
-** Decide
-:PROPERTIES:
-:ID:       a8a7c73d-f9f8-488a-bd69-8a4ec3c0ff81
-:END:
-#+BEGIN_SRC emacs-lisp
-(define-prefix-command 'decide-prefix-map)
-(define-key decide-mode-map (kbd "C-c ?") 'decide-prefix-map)
-(define-key decide-mode-map (kbd "C-c ? ?") 'decide-dwim-insert)
-(define-key decide-mode-map (kbd "C-c ? +") 'decide-for-me-likely)
-(define-key decide-mode-map (kbd "C-c ? -") 'decide-for-me-unlikely)
-(define-key decide-mode-map (kbd "C-c ? d") 'decide-roll-dice)
-(define-key decide-mode-map (kbd "C-c ? D") 'decide-roll-2d6)
-(define-key decide-mode-map (kbd "C-c ? 3") 'decide-roll-1d3)
-(define-key decide-mode-map (kbd "C-c ? 4") 'decide-roll-1d4)
-(define-key decide-mode-map (kbd "C-c ? 5") 'decide-roll-1d5)
-(define-key decide-mode-map (kbd "C-c ? 6") 'decide-roll-1d6)
-(define-key decide-mode-map (kbd "C-c ? 7") 'decide-roll-1d7)
-(define-key decide-mode-map (kbd "C-c ? 8") 'decide-roll-1d8)
-(define-key decide-mode-map (kbd "C-c ? 9") 'decide-roll-1d9)
-(define-key decide-mode-map (kbd "C-c ? 1 0") 'decide-roll-1d10)
-(define-key decide-mode-map (kbd "C-c ? 1 2") 'decide-roll-1d12)
-(define-key decide-mode-map (kbd "C-c ? 2 0") 'decide-roll-1d20)
-(define-key decide-mode-map (kbd "C-c ? %") 'decide-roll-1d100)
-(define-key decide-mode-map (kbd "C-c ? f") 'decide-roll-fate)
-(define-key decide-mode-map (kbd "C-c ? a") 'decide-roll-1dA)
-(define-key decide-mode-map (kbd "C-c ? A") 'decide-roll-2dA)
-(define-key decide-mode-map (kbd "C-c ? r") 'decide-random-range)
-(define-key decide-mode-map (kbd "C-c ? c") 'decide-random-choice)
-(define-key decide-mode-map (kbd "C-c ? t") 'decide-from-table)
-#+END_SRC
 ** Projectile
 :PROPERTIES:
 :ID:       7891e8fa-54da-4e1b-ad86-b29597ad3b68
@@ -329,6 +312,8 @@ change `org-directory'. It must be set before org loads!
 #+BEGIN_SRC emacs-lisp
 (setq
   projectile-project-search-path '("~/dev/"))
+
+(add-to-list 'projectile-globally-ignored-files "npm-shrinkwrap.json")
 #+END_SRC
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
