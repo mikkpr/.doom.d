@@ -55,7 +55,7 @@ are the three important ones:
 They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 font string. You generally only need these two:
 #+BEGIN_SRC emacs-lisp
-(setq doom-font (font-spec :family "Hasklig" :size 12))
+(setq doom-font (font-spec :family "Cascadia Code" :size 12))
 #+END_SRC
 
 *** Theme
@@ -72,6 +72,11 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 #+END_SRC
 *** Indentation
+**** General
+#+BEGIN_SRC emacs-lisp
+(setq tab-width 2)
+(setq standard-indent 2)
+#+END_SRC
 **** Javascript
 :PROPERTIES:
 :ID:       21acf9da-c62a-4450-ab0e-48adcfd07fd9
@@ -113,11 +118,13 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 (setq max-mini-window-height 0.5)
 #+END_SRC
 
+#+RESULTS:
+: 0.5
+
 * Packages
 ** Load paths
 #+BEGIN_SRC emacs-lisp
-(require 'spotify)
-(require 'org-expiry)
+(use-package org-expiry :defer t)
 #+END_SRC
 ** Org
 **** Settings
@@ -160,7 +167,7 @@ change `org-directory'. It must be set before org loads!
 #+BEGIN_SRC emacs-lisp
 (after! org
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "INPROGRESS(i)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
+        '((sequence "TODO(t)" "INPROGRESS(i)" "TESTING(T)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
 #+END_SRC
 **** Time stamps
 #+BEGIN_SRC emacs-lisp
@@ -190,7 +197,7 @@ change `org-directory'. It must be set before org loads!
 :ID:       22b5598f-d25e-49be-9fed-fa384fccbfb6
 :END:
 #+BEGIN_SRC emacs-lisp
-(require 'org-gcal)
+(use-package org-gcal :defer t)
 #+END_SRC
 
 **** Org-super-agenda
@@ -198,7 +205,7 @@ change `org-directory'. It must be set before org loads!
 :ID:       bad41a54-afcd-4788-9c5f-ee141e7d1ba9
 :END:
 #+BEGIN_SRC emacs-lisp
-(require 'org-super-agenda)
+(use-package org-super-agenda :defer t)
 (def-package! org-super-agenda
   :after org-agenda
   :init
@@ -209,7 +216,21 @@ change `org-directory'. It must be set before org loads!
         org-agenda-compact-blocks t
         org-agenda-start-day nil
         org-agenda-span 1
-        org-agenda-start-on-weekday nil)
+        org-agenda-start-on-weekday nil
+        org-super-agenda-groups '((:name "Today"
+				:time-grid t
+				:scheduled today)
+			   (:name "Due today"
+				:deadline today)
+			   (:name "Important"
+				:priority "A")
+			   (:name "Overdue"
+				:deadline past)
+			   (:name "Due soon"
+				:deadline future)
+			   (:name "Waiting"
+			       :todo "WAIT"))
+        )
   :config
   (org-super-agenda-mode)
   )
@@ -231,8 +252,8 @@ change `org-directory'. It must be set before org loads!
 :ID:       abd9eb20-092b-4cc6-b092-a2eb1d491a05
 :END:
 #+BEGIN_SRC emacs-lisp
-(require 'org-datetree)
-(require 'org-reverse-datetree)
+(use-package org-datetree :defer t)
+(use-package org-reverse-datetree :defer t)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -261,31 +282,37 @@ change `org-directory'. It must be set before org loads!
 :END:
 #+BEGIN_SRC emacs-lisp
 (setq org-agenda-custom-commands
-      '(("." "Overview (Custom)"
+      '(("." "Overview (Work)"
          ((agenda ""
                   ((org-agenda-span 5)
                    (org-agenda-start-on-weekday 1)
                    (org-agenda-show-future-repeats 'next)
                    (org-agenda-scheduled-leaders '("" ""))
-                   (org-agenda-overriding-header "* Calendar\n")))
+                   (org-agenda-overriding-header "* Calendar\n")
+                   (org-agenda-files (list org-work-file-path))))
           (todo ""
                 ((org-agenda-overriding-header "\n* Open\n")
                  (org-agenda-block-separator nil)
-                 (org-agenda-sorting-strategy '(todo-state-up))
-                 (org-agenda-todo-ignore-scheduled 'all)))
+                 (org-agenda-sorting-strategy '(todo-state-up priority-up timestamp-up habit-down))
+                 (org-agenda-todo-ignore-scheduled 'all)
+                 (org-agenda-files (list org-work-file-path))))
           ))
-      ("h" "Browse entries in home.org"
-         org-ql-block '(level 4)
-         ((org-super-agenda-groups
-           '((:todo "DONE")
-             (:todo t)))
-          (org-agenda-files (list org-home-file-path))))
-      ("w" "Browse entries in work.org"
-         org-ql-block '(level 4)
-         ((org-super-agenda-groups
-           '((:todo "DONE")
-             (:todo t)))
-          (org-agenda-files (list org-work-file-path))))))
+        ("," "Overview (Personal)"
+         ((agenda ""
+                  ((org-agenda-span 5)
+                   (org-agenda-start-on-weekday 1)
+                   (org-agenda-show-future-repeats 'next)
+                   (org-agenda-scheduled-leaders '("" ""))
+                   (org-agenda-overriding-header "* Calendar\n")
+                   (org-agenda-files (list org-home-file-path))))
+          (todo ""
+                ((org-agenda-overriding-header "\n* Open\n")
+                 (org-agenda-block-separator nil)
+                 (org-agenda-sorting-strategy '(todo-state-up priority-up timestamp-up habit-down))
+                 (org-agenda-todo-ignore-scheduled 'all)
+                 (org-agenda-files (list org-home-file-path))))
+          ))
+      ))
 #+END_SRC
 
 **** Org-agenda-property
@@ -293,16 +320,24 @@ change `org-directory'. It must be set before org loads!
 :ID:       e0e37646-215d-42f7-84ac-dd138660eeb9
 :END:
 #+BEGIN_SRC emacs-lisp
-(require 'org-agenda-property)
+(use-package org-agenda-property :defer t)
 (setq org-agenda-property-list '("status"))
 (setq org-agenda-property-position 'where-it-fits)
+#+END_SRC
+**** Org-habit-show-habit-only-for-today
+#+BEGIN_SRC emacs-lisp
+(setq org-habit-show-habits-only-for-today t)
 #+END_SRC
 
 ** Spotify
 #+BEGIN_SRC emacs-lisp
 ;; Spotify settings
-(setq spotify-transport 'dbus)
-(define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+(use-package spotify
+  :defer t
+  :config
+        (setq spotify-transport 'dbus)
+        (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+  )
 #+END_SRC
 
 ** Projectile
@@ -318,16 +353,15 @@ change `org-directory'. It must be set before org loads!
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
 (require 'flycheck)
-
 (setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(javascript-jshint)))
+            (append flycheck-disabled-checkers
+                    '(javascript-jshint)))
 
 (setq-default flycheck-temp-prefix ".flycheck")
 
 (setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(json-jsonlist)))
+            (append flycheck-disabled-checkers
+                    '(json-jsonlist)))
 
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 #+END_SRC
@@ -359,6 +393,12 @@ change `org-directory'. It must be set before org loads!
     (when (and eslint (file-executable-p eslint))
       (setq-local flycheck-javascript-eslint-executable eslint))))
 (add-hook 'flycheck-mode-hook #'mikkpr/use-eslint-from-node-modules)
+#+END_SRC
+** Discover.el
+#+BEGIN_SRC emacs-lisp
+(use-package discover :defer t)
+(use-package makey :defer t)
+(global-discover-mode 1)
 #+END_SRC
 
 * Keybinds

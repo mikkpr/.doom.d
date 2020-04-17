@@ -67,3 +67,4 @@
 (package! decide-mode
   :recipe (:host github :repo "lifelike/decide-mode"))
 (package! command-log-mode)
+(package! discover)

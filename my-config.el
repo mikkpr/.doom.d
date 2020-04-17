@@ -26,11 +26,14 @@
 (defvar org-work-file-path (expand-file-name "work.org" dropbox-path))
 (defvar org-schedule-file-path (expand-file-name "schedule.org" dropbox-path))
 
-(setq doom-font (font-spec :family "Hasklig" :size 12))
+(setq doom-font (font-spec :family "Cascadia Code" :size 12))
 
 (setq doom-theme 'doom-tomorrow-night)
 
 (setq display-line-numbers-type t)
+
+(setq tab-width 2)
+(setq standard-indent 2)
 
 (setq
   js-indent-level 2)
@@ -53,8 +56,7 @@
 
 (setq max-mini-window-height 0.5)
 
-(require 'spotify)
-(require 'org-expiry)
+(use-package org-expiry :defer t)
 
 (setq org-log-state-notes-into-drawer t
       org-habit-preceding-days 5
@@ -74,7 +76,7 @@
 
 (after! org
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "INPROGRESS(i)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
+        '((sequence "TODO(t)" "INPROGRESS(i)" "TESTING(T)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))))
 
 (setq org-display-custom-times t
       org-time-stamp-custom-formats '("<%Y-%m-%d>" . "<%Y-%m-%d %H:%M>"))
@@ -91,9 +93,9 @@
   (file+headline org-work-file-path "Inbox")
   "* %?\n%i\nCREATED: %u" :prepend t)))
 
-(require 'org-gcal)
+(use-package org-gcal :defer t)
 
-(require 'org-super-agenda)
+(use-package org-super-agenda :defer t)
 (def-package! org-super-agenda
   :after org-agenda
   :init
@@ -104,7 +106,21 @@
         org-agenda-compact-blocks t
         org-agenda-start-day nil
         org-agenda-span 1
-        org-agenda-start-on-weekday nil)
+        org-agenda-start-on-weekday nil
+        org-super-agenda-groups '((:name "Today"
+				:time-grid t
+				:scheduled today)
+			   (:name "Due today"
+				:deadline today)
+			   (:name "Important"
+				:priority "A")
+			   (:name "Overdue"
+				:deadline past)
+			   (:name "Due soon"
+				:deadline future)
+			   (:name "Waiting"
+			       :todo "WAIT"))
+        )
   :config
   (org-super-agenda-mode)
   )
@@ -115,8 +131,8 @@
                     (org-back-to-heading)
                     (org-expiry-insert-created))))
 
-(require 'org-datetree)
-(require 'org-reverse-datetree)
+(use-package org-datetree :defer t)
+(use-package org-reverse-datetree :defer t)
 
 (defun mikkpr/org-refile-to-work-log (arg)
   (interactive "P")
@@ -131,39 +147,51 @@
 (set-face-attribute 'org-agenda-structure nil :inherit 'default :height 1.25)
 
 (setq org-agenda-custom-commands
-      '(("." "Overview (Custom)"
+      '(("." "Overview (Work)"
          ((agenda ""
                   ((org-agenda-span 5)
                    (org-agenda-start-on-weekday 1)
                    (org-agenda-show-future-repeats 'next)
                    (org-agenda-scheduled-leaders '("" ""))
-                   (org-agenda-overriding-header "* Calendar\n")))
+                   (org-agenda-overriding-header "* Calendar\n")
+                   (org-agenda-files (list org-work-file-path))))
           (todo ""
                 ((org-agenda-overriding-header "\n* Open\n")
                  (org-agenda-block-separator nil)
-                 (org-agenda-sorting-strategy '(todo-state-up))
-                 (org-agenda-todo-ignore-scheduled 'all)))
+                 (org-agenda-sorting-strategy '(todo-state-up priority-up timestamp-up habit-down))
+                 (org-agenda-todo-ignore-scheduled 'all)
+                 (org-agenda-files (list org-work-file-path))))
           ))
-      ("h" "Browse entries in home.org"
-         org-ql-block '(level 4)
-         ((org-super-agenda-groups
-           '((:todo "DONE")
-             (:todo t)))
-          (org-agenda-files (list org-home-file-path))))
-      ("w" "Browse entries in work.org"
-         org-ql-block '(level 4)
-         ((org-super-agenda-groups
-           '((:todo "DONE")
-             (:todo t)))
-          (org-agenda-files (list org-work-file-path))))))
+        ("," "Overview (Personal)"
+         ((agenda ""
+                  ((org-agenda-span 5)
+                   (org-agenda-start-on-weekday 1)
+                   (org-agenda-show-future-repeats 'next)
+                   (org-agenda-scheduled-leaders '("" ""))
+                   (org-agenda-overriding-header "* Calendar\n")
+                   (org-agenda-files (list org-home-file-path))))
+          (todo ""
+                ((org-agenda-overriding-header "\n* Open\n")
+                 (org-agenda-block-separator nil)
+                 (org-agenda-sorting-strategy '(todo-state-up priority-up timestamp-up habit-down))
+                 (org-agenda-todo-ignore-scheduled 'all)
+                 (org-agenda-files (list org-home-file-path))))
+          ))
+      ))
 
-(require 'org-agenda-property)
+(use-package org-agenda-property :defer t)
 (setq org-agenda-property-list '("status"))
 (setq org-agenda-property-position 'where-it-fits)
 
+(setq org-habit-show-habits-only-for-today t)
+
 ;; Spotify settings
-(setq spotify-transport 'dbus)
-(define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+(use-package spotify
+  :defer t
+  :config
+        (setq spotify-transport 'dbus)
+        (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+  )
 
 (setq
   projectile-project-search-path '("~/dev/"))
@@ -171,16 +199,15 @@
 (add-to-list 'projectile-globally-ignored-files "npm-shrinkwrap.json")
 
 (require 'flycheck)
-
 (setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(javascript-jshint)))
+            (append flycheck-disabled-checkers
+                    '(javascript-jshint)))
 
 (setq-default flycheck-temp-prefix ".flycheck")
 
 (setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(json-jsonlist)))
+            (append flycheck-disabled-checkers
+                    '(json-jsonlist)))
 
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 
@@ -204,6 +231,10 @@
     (when (and eslint (file-executable-p eslint))
       (setq-local flycheck-javascript-eslint-executable eslint))))
 (add-hook 'flycheck-mode-hook #'mikkpr/use-eslint-from-node-modules)
+
+(use-package discover :defer t)
+(use-package makey :defer t)
+(global-discover-mode 1)
 
 ;; with `evil-define-key'
 (evil-define-key nil evil-normal-state-map
