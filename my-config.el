@@ -26,7 +26,9 @@
 (defvar org-work-file-path (expand-file-name "work.org" dropbox-path))
 (defvar org-schedule-file-path (expand-file-name "schedule.org" dropbox-path))
 
-(setq doom-font (font-spec :family "Cascadia Code" :size 12))
+;;(setq doom-font (font-spec :family "Hasklig" :size 12))
+(setq doom-font (font-spec :family "CaskaydiaCove Nerd Font Mono" :size 12))
+;;(setq doom-font (font-spec :family "ProggyVector" :size 11))
 
 (setq doom-theme 'doom-tomorrow-night)
 
@@ -35,8 +37,9 @@
 (setq tab-width 2)
 (setq standard-indent 2)
 
-(setq
-  js-indent-level 2)
+(setq js-indent-level 2)
+
+(setq typescript-indent-level 2)
 
 (defun my-web-mode-hook ()
   "Hooks for Web mode. Adjust indents"
@@ -236,6 +239,9 @@
 (use-package makey :defer t)
 (global-discover-mode 1)
 
+(require 'popwin)
+(popwin-mode 1)
+
 ;; with `evil-define-key'
 (evil-define-key nil evil-normal-state-map
   "J" (lambda() (interactive) (evil-next-visual-line 5))
@@ -263,6 +269,3 @@
   (kbd "SPC m r j") 'mikkpr/org-refile-to-journal
   (kbd ", a") 'evil-window-left
   (kbd ", d") 'evil-window-right)
-
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))

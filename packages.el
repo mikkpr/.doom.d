@@ -68,3 +68,4 @@
   :recipe (:host github :repo "lifelike/decide-mode"))
 (package! command-log-mode)
 (package! discover)
+(package! popwin)

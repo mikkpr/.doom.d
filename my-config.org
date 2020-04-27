@@ -55,7 +55,9 @@ are the three important ones:
 They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 font string. You generally only need these two:
 #+BEGIN_SRC emacs-lisp
-(setq doom-font (font-spec :family "Cascadia Code" :size 12))
+;;(setq doom-font (font-spec :family "Hasklig" :size 12))
+(setq doom-font (font-spec :family "CaskaydiaCove Nerd Font Mono" :size 12))
+;;(setq doom-font (font-spec :family "ProggyVector" :size 11))
 #+END_SRC
 
 *** Theme
@@ -82,10 +84,12 @@ numbers are disabled. For relative line numbers, set this to `relative'.
 :ID:       21acf9da-c62a-4450-ab0e-48adcfd07fd9
 :END:
 #+BEGIN_SRC emacs-lisp
-(setq
-  js-indent-level 2)
+(setq js-indent-level 2)
 #+END_SRC
-
+**** Typescript
+#+BEGIN_SRC emacs-lisp
+(setq typescript-indent-level 2)
+#+END_SRC
 **** web-mode hooks
 :PROPERTIES:
 :ID:       dbb37c3b-efe4-471a-b1ac-6352fd2eaf13
@@ -400,6 +404,11 @@ change `org-directory'. It must be set before org loads!
 (use-package makey :defer t)
 (global-discover-mode 1)
 #+END_SRC
+** popwin.el
+#+BEGIN_SRC emacs-lisp
+(require 'popwin)
+(popwin-mode 1)
+#+END_SRC
 
 * Keybinds
 #+BEGIN_SRC emacs-lisp
@@ -430,13 +439,4 @@ change `org-directory'. It must be set before org loads!
   (kbd "SPC m r j") 'mikkpr/org-refile-to-journal
   (kbd ", a") 'evil-window-left
   (kbd ", d") 'evil-window-right)
-#+END_SRC
-
-* ???
-:PROPERTIES:
-:ID:       ab9ece60-b05d-4feb-9ee0-9e58182d75f7
-:END:
-#+BEGIN_SRC emacs-lisp
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
 #+END_SRC
